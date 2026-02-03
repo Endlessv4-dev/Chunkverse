@@ -1,0 +1,11 @@
+name: Economy
+version: '1.0'
+main: dev.endless.v4.economy.Main
+api-version: '1.21'
+authors: [ Endless v4 ]
+description: Custom economy system made for Chunkverse.
+commands:
+  orbs:
+    description: Manage the premium currency for players.
+  bits:
+    description: Manage the general currency for players.
