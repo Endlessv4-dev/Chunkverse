@@ -1,0 +1,6 @@
+database:
+  host: "localhost"
+  port: 3306
+  name: "chunkversetest"
+  user: "chunkverse-db"
+  password: "@p9;9#7T8@p;|_O+8!gyvt%4;fsZ~(9+9O2f%Jhl@<Y.dfT0"

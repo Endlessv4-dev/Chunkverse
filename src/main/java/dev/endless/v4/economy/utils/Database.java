@@ -5,27 +5,53 @@ import org.bukkit.Bukkit;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
+import java.sql.Statement;
 
 public class Database {
 
     private static Connection connection;
 
-    public static void connect() {
+    public static void connect(String host, int port, String database, String user, String password) {
         try {
-            String host = "localhost";
-            String database = "chunkversetest";
-            String username = "chunkverse-db";
-            String password = "";
-            int port = 3306;
+            String url = "jdbc:mysql://" + host + ":" + port + "/" + database + "?useSSL=false&allowPublicKeyRetrieval=true";
 
-            connection = DriverManager.getConnection(
-                    "jdbc:mysql://" + host + ":" + port + "/" + database + "?useSSL=false", username, password
-            );
+            connection = DriverManager.getConnection(url, user, password);
 
-            Bukkit.getLogger().info("Database connected!");
+            Bukkit.getLogger().info("§a[Economy] Sikeresen csatlakozva az adatbázishoz!");
         } catch (SQLException e) {
+            Bukkit.getLogger().severe("§c[Economy] NEM SIKERÜLT csatlakozni az adatbázishoz! Ellenőrizd a config.yml-t.");
             e.printStackTrace();
-            Bukkit.getLogger().severe("Could not connect to database.");
+        }
+    }
+
+
+    public static void createTables() {
+        if (connection == null) return;
+
+        try (Statement statement = connection.createStatement()) {
+            statement.executeUpdate("CREATE TABLE IF NOT EXISTS economy (" +
+                    "uuid VARCHAR(36) PRIMARY KEY, " +
+                    "bits DOUBLE DEFAULT 0, " +
+                    "orbs DOUBLE DEFAULT 0)");
+            Bukkit.getLogger().info("§a[Economy] Adatbázis tábla (economy) ellenőrizve/létrehozva.");
+        } catch (SQLException e) {
+            Bukkit.getLogger().severe("§c[Economy] Hiba történt a tábla létrehozásakor!");
+            e.printStackTrace();
+        }
+
+        try (Statement statement = connection.createStatement()) {
+            statement.executeUpdate("CREATE TABLE IF NOT EXISTS log (" +
+                    "id INT(11) AUTO_INCREMENT PRIMARY KEY, " +
+                    "sender VARCHAR(36), " +
+                    "target VARCHAR(36), " +
+                    "type VARCHAR(16), " +
+                    "currency VARCHAR(16), " +
+                    "amount DOUBLE," +
+                    "date TIMESTAMP)");
+            Bukkit.getLogger().info("[Economy] Adatbázis tábla (log) létrehozva/ellenőrízve.");
+        } catch (SQLException e) {
+            Bukkit.getLogger().severe("[Economy] Hiba történt a tábla létrehozásakor!");
+            e.printStackTrace();
         }
     }
 
@@ -33,7 +59,7 @@ public class Database {
         try {
             if (connection != null && !connection.isClosed()) {
                 connection.close();
-                Bukkit.getLogger().info("Database connection closed.");
+                Bukkit.getLogger().info("Adatbázis kapcsolat lezárva.");
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -43,5 +69,4 @@ public class Database {
     public static Connection getConnection() {
         return connection;
     }
-
 }

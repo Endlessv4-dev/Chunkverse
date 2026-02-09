@@ -13,21 +13,14 @@ public class OrbsManager {
 
     public static final HashMap<UUID, Double> orbs = new HashMap<>();
 
-
     public static void loadOrbs() {
         orbs.clear();
+        if (Database.getConnection() == null) return;
 
-        try (PreparedStatement ps = Database.getConnection().prepareStatement("SELECT uuid, orbs FROM profile")) {
+        try (PreparedStatement ps = Database.getConnection().prepareStatement("SELECT uuid, orbs FROM economy")) {
             ResultSet rs = ps.executeQuery();
-
             while (rs.next()) {
-                String uuidStr = rs.getString("uuid");
-                if (uuidStr == null || uuidStr.isEmpty()) {
-                    continue;
-                }
-                UUID uuid = UUID.fromString(uuidStr);
-                double currency = rs.getDouble("orbs");
-                orbs.put(uuid, currency);
+                orbs.put(UUID.fromString(rs.getString("uuid")), rs.getDouble("orbs"));
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -35,40 +28,43 @@ public class OrbsManager {
     }
 
     public static void give(Player player, double amount) {
-        double newBalance = orbs.compute(player.getUniqueId(), (k, current) -> (current == null ? 0 : current) + amount);
-        update(player.getUniqueId(), newBalance);
+        double current = orbs.getOrDefault(player.getUniqueId(), 0.0);
+        set(player, current + amount);
     }
 
     public static void take(Player player, double amount) {
-        double newBalance = orbs.compute(player.getUniqueId(), (k, current) -> {
-            double newVal = (current == null ? 0 : current) - amount;
-            return Math.max(newVal, 0);
-        });
-        update(player.getUniqueId(), newBalance);
+        double current = orbs.getOrDefault(player.getUniqueId(), 0.0);
+        set(player, Math.max(0, current - amount));
     }
 
     public static void set(Player player, double amount) {
         orbs.put(player.getUniqueId(), amount);
-        update(player.getUniqueId(), amount);
+        updateDatabase(player.getUniqueId(), amount);
     }
 
     public static void reset(Player player) {
-        orbs.put(player.getUniqueId(), 0.0);
-        update(player.getUniqueId(), 0.0);
+        set(player, 0.0);
     }
 
-    public static Double getOrbs(Player player) {
-        return orbs.getOrDefault(player.getUniqueId(), 0.0);
+    public static boolean send(Player sender, Player target, double amount) {
+        double senderBalance = orbs.getOrDefault(sender.getUniqueId(), 0.0);
+        if (senderBalance < amount || amount <= 0) {
+            return false;
+        }
+        take(sender, amount);
+        give(target, amount);
+        return true;
     }
 
-    private static void update(UUID uuid, double balance) {
-        try (PreparedStatement ps = Database.getConnection().prepareStatement("UPDATE economy SET orbs = ? WHERE uuid = ?")) {
-            ps.setDouble(1, balance);
-            ps.setString(2, uuid.toString());
+    private static void updateDatabase(UUID uuid, double balance) {
+        String sql = "INSERT INTO economy (uuid, orbs) VALUES (?, ?) ON DUPLICATE KEY UPDATE orbs = ?";
+        try (PreparedStatement ps = Database.getConnection().prepareStatement(sql)) {
+            ps.setString(1, uuid.toString());
+            ps.setDouble(2, balance);
+            ps.setDouble(3, balance);
             ps.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
         }
     }
-
 }

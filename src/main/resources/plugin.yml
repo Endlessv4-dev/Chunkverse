@@ -4,8 +4,21 @@ main: dev.endless.v4.economy.Main
 api-version: '1.21'
 authors: [ Endless v4 ]
 description: Custom economy system made for Chunkverse.
+softdepend: [PlaceholderAPI]
 commands:
-  orbs:
+  orbsa:
     description: Manage the premium currency for players.
-  bits:
+  bitsa:
     description: Manage the general currency for players.
+  orbs:
+    description: Check/send orbs.
+  bits:
+    description: Check/send bits.
+  orbaccept:
+    description: Accepting the sending of premium currency.
+  orbdeny:
+    description: Cancelling the sending of premium currency.
+  viewlog:
+    description: Update and view the logs.
+  openlogs:
+    description: Open the logs.
