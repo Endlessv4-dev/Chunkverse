@@ -19,6 +19,10 @@ commands:
   orbdeny:
     description: Cancelling the sending of premium currency.
   viewlog:
-    description: Update and view the logs.
+    description: view the logs.
   openlogs:
     description: Open the logs.
+  logs:
+    description: Execute specified command on the logs.
+  rollback:
+    description: Rolls back the specified transaction.

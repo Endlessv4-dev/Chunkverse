@@ -2,6 +2,7 @@ package dev.endless.v4.economy.managers;
 
 import dev.endless.v4.economy.utils.Database;
 import org.bukkit.Location;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
 
 import java.sql.*;
@@ -36,14 +37,15 @@ public class BitsManager {
         LocalDateTime now = LocalDateTime.now();
         Timestamp sqlDate = Timestamp.valueOf(now);
 
-        String sql = "INSERT INTO log (executor, target, type, currency, amount, date) VALUES(?, ?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO logs (executor, target, type, currency, amount, old_balance, date) VALUES(?, ?, ?, ?, ?, ?, ?)";
         try (PreparedStatement ps = Database.getConnection().prepareStatement(sql)) {
             ps.setString(1, sender.getUniqueId().toString());
             ps.setString(2, player.getUniqueId().toString());
             ps.setString(3, "give");
             ps.setString(4, "bits");
             ps.setDouble(5, amount);
-            ps.setTimestamp(6, sqlDate);
+            ps.setDouble(6, current);
+            ps.setTimestamp(7, sqlDate);
 
             ps.executeUpdate();
         } catch (SQLException e) {
@@ -59,19 +61,26 @@ public class BitsManager {
         LocalDateTime now = LocalDateTime.now();
         Timestamp sqlDate = Timestamp.valueOf(now);
 
-        String sql = "INSERT INTO log (executor, target, type, currency, amount, date) VALUES(?, ?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO logs (executor, target, type, currency, amount, old_balance, date) VALUES(?, ?, ?, ?, ?, ?, ?)";
         try (PreparedStatement ps = Database.getConnection().prepareStatement(sql)) {
             ps.setString(1, server);
             ps.setString(2, player.getUniqueId().toString());
             ps.setString(3, "give");
             ps.setString(4, "bits");
             ps.setDouble(5, amount);
-            ps.setTimestamp(6, sqlDate);
+            ps.setDouble(6, current);
+            ps.setTimestamp(7, sqlDate);
 
             ps.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
         }
+    }
+
+    public static void give(OfflinePlayer player, double amount) {
+        double current = bits.getOrDefault(player.getUniqueId(), 0.0);
+        bits.put(player.getUniqueId(), current + amount);
+        updateDatabase(player.getUniqueId(), current + amount);
     }
 
     public static void take(Player sender, Player player, double amount) {
@@ -82,14 +91,15 @@ public class BitsManager {
         LocalDateTime now = LocalDateTime.now();
         Timestamp sqlDate = Timestamp.valueOf(now);
 
-        String sql = "INSERT INTO log (executor, target, type, currency, amount, date) VALUES(?, ?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO logs (executor, target, type, currency, amount, old_balance, date) VALUES(?, ?, ?, ?, ?, ?, ?)";
         try (PreparedStatement ps = Database.getConnection().prepareStatement(sql)) {
             ps.setString(1, sender.getUniqueId().toString());
             ps.setString(2, player.getUniqueId().toString());
             ps.setString(3, "take");
             ps.setString(4, "bits");
             ps.setDouble(5, amount);
-            ps.setTimestamp(6, sqlDate);
+            ps.setDouble(6, current);
+            ps.setTimestamp(7, sqlDate);
 
             ps.executeUpdate();
         } catch (SQLException e) {
@@ -105,14 +115,15 @@ public class BitsManager {
         LocalDateTime now = LocalDateTime.now();
         Timestamp sqlDate = Timestamp.valueOf(now);
 
-        String sql = "INSERT INTO log (executor, target, type, currency, amount, date) VALUES(?, ?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO logs (executor, target, type, currency, amount, old_balance, date) VALUES(?, ?, ?, ?, ?, ?, ?)";
         try (PreparedStatement ps = Database.getConnection().prepareStatement(sql)) {
             ps.setString(1, server);
             ps.setString(2, player.getUniqueId().toString());
             ps.setString(3, "take");
             ps.setString(4, "bits");
             ps.setDouble(5, amount);
-            ps.setTimestamp(6, sqlDate);
+            ps.setDouble(6, current);
+            ps.setTimestamp(7, sqlDate);
 
             ps.executeUpdate();
         } catch (SQLException e) {
@@ -120,21 +131,29 @@ public class BitsManager {
         }
     }
 
+    public static void take(OfflinePlayer player, double amount) {
+        double current = bits.getOrDefault(player.getUniqueId(), 0.0);
+        bits.put(player.getUniqueId(), Math.max(0, current - amount));
+        updateDatabase(player.getUniqueId(), Math.max(0, current - amount));
+    }
+
     public static void set(Player sender, Player player, double amount) {
+        double current = bits.getOrDefault(player.getUniqueId(), 0.0);
         bits.put(player.getUniqueId(), amount);
         updateDatabase(player.getUniqueId(), amount);
 
         LocalDateTime now = LocalDateTime.now();
         Timestamp sqlDate = Timestamp.valueOf(now);
 
-        String sql = "INSERT INTO log (executor, target, type, currency, amount, date) VALUES(?, ?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO logs (executor, target, type, currency, amount, old_balance, date) VALUES(?, ?, ?, ?, ?, ?, ?)";
         try (PreparedStatement ps = Database.getConnection().prepareStatement(sql)) {
             ps.setString(1, sender.getUniqueId().toString());
             ps.setString(2, player.getUniqueId().toString());
             ps.setString(3, "set");
             ps.setString(4, "bits");
             ps.setDouble(5, amount);
-            ps.setTimestamp(6, sqlDate);
+            ps.setDouble(6, current);
+            ps.setTimestamp(7, sqlDate);
 
             ps.executeUpdate();
         } catch (SQLException e) {
@@ -143,20 +162,22 @@ public class BitsManager {
     }
 
     public static void set(String server, Player player, double amount) {
+        double current = bits.getOrDefault(player.getUniqueId(), 0.0);
         bits.put(player.getUniqueId(), amount);
         updateDatabase(player.getUniqueId(), amount);
 
         LocalDateTime now = LocalDateTime.now();
         Timestamp sqlDate = Timestamp.valueOf(now);
 
-        String sql = "INSERT INTO log (executor, target, type, currency, amount, date) VALUES(?, ?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO logs (executor, target, type, currency, amount, old_balance, date) VALUES(?, ?, ?, ?, ?, ?, ?)";
         try (PreparedStatement ps = Database.getConnection().prepareStatement(sql)) {
             ps.setString(1, server);
             ps.setString(2, player.getUniqueId().toString());
             ps.setString(3, "set");
             ps.setString(4, "bits");
             ps.setDouble(5, amount);
-            ps.setTimestamp(6, sqlDate);
+            ps.setDouble(6, current);
+            ps.setTimestamp(7, sqlDate);
 
             ps.executeUpdate();
         } catch (SQLException e) {
@@ -164,21 +185,28 @@ public class BitsManager {
         }
     }
 
+    public static void set(OfflinePlayer player, double amount) {
+        bits.put(player.getUniqueId(), amount);
+        updateDatabase(player.getUniqueId(), amount);
+    }
+
     public static void reset(Player sender, Player player) {
+        double balance = bits.getOrDefault(player.getUniqueId(), 0.0);
         bits.put(player.getUniqueId(), 0.0);
         updateDatabase(player.getUniqueId(), 0.0);
 
         LocalDateTime now = LocalDateTime.now();
         Timestamp sqlDate = Timestamp.valueOf(now);
 
-        String sql = "INSERT INTO log (executor, target, type, currency, amount, date) VALUES(?, ?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO logs (executor, target, type, currency, amount, old_balance, date) VALUES(?, ?, ?, ?, ?, ?, ?)";
         try (PreparedStatement ps = Database.getConnection().prepareStatement(sql)) {
             ps.setString(1, sender.getUniqueId().toString());
             ps.setString(2, player.getUniqueId().toString());
             ps.setString(3, "reset");
             ps.setString(4, "bits");
             ps.setDouble(5, 0.0);
-            ps.setTimestamp(6, sqlDate);
+            ps.setDouble(6, balance);
+            ps.setTimestamp(7, sqlDate);
 
             ps.executeUpdate();
         } catch (SQLException e) {
@@ -188,20 +216,22 @@ public class BitsManager {
     }
 
     public static void reset(String server, Player player) {
+        double balance = bits.getOrDefault(player.getUniqueId(), 0.0);
         bits.put(player.getUniqueId(), 0.0);
         updateDatabase(player.getUniqueId(), 0.0);
 
         LocalDateTime now = LocalDateTime.now();
         Timestamp sqlDate = Timestamp.valueOf(now);
 
-        String sql = "INSERT INTO log (executor, target, type, currency, amount, date) VALUES(?, ?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO logs (executor, target, type, currency, amount, old_balance, date) VALUES(?, ?, ?, ?, ?, ?, ?)";
         try (PreparedStatement ps = Database.getConnection().prepareStatement(sql)) {
             ps.setString(1, server);
             ps.setString(2, player.getUniqueId().toString());
             ps.setString(3, "reset");
             ps.setString(4, "bits");
             ps.setDouble(5, 0.0);
-            ps.setTimestamp(6, sqlDate);
+            ps.setDouble(6, balance);
+            ps.setTimestamp(7, sqlDate);
 
             ps.executeUpdate();
         } catch (SQLException e) {
@@ -209,37 +239,31 @@ public class BitsManager {
         }
     }
 
+    public static void reset(OfflinePlayer player) {
+        bits.put(player.getUniqueId(), 0.0);
+        updateDatabase(player.getUniqueId(), 0.0);
+    }
+
     public static boolean send(Player sender, Player target, double amount) {
         double senderBalance = bits.getOrDefault(sender.getUniqueId(), 0.0);
         if (senderBalance < amount || amount <= 0) {
             return false;
         }
-        take(target, sender, amount);
-        give(sender, target, amount);
+        take(sender, amount);
+        give(target, amount);
 
         LocalDateTime now = LocalDateTime.now();
         Timestamp sqlDate = Timestamp.valueOf(now);
 
-        String sql = "UPDATE log SET type = ? WHERE executor = ? AND target = ? AND date = ? AND type = ?";
+        String sql = "INSERT INTO logs (executor, target, type, currency, amount, old_balance, date) VALUES(?, ?, ?, ?, ?, ?, ?)";
         try (PreparedStatement ps = Database.getConnection().prepareStatement(sql)) {
-            ps.setString(1, "received");
-            ps.setString(2, sender.getUniqueId().toString());
-            ps.setString(3, target.getUniqueId().toString());
-            ps.setTimestamp(4, sqlDate);
-            ps.setString(5, "give");
-
-            ps.executeUpdate();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-
-        String sql2 = "UPDATE log SET type = ? WHERE executor = ? AND target = ? AND date = ? AND type = ?";
-        try (PreparedStatement ps = Database.getConnection().prepareStatement(sql2)) {
-            ps.setString(1, "send");
-            ps.setString(2, sender.getUniqueId().toString());
-            ps.setString(3, target.getUniqueId().toString());
-            ps.setTimestamp(4, sqlDate);
-            ps.setString(5, "take");
+            ps.setString(1, sender.getUniqueId().toString());
+            ps.setString(2, target.getUniqueId().toString());
+            ps.setString(3, "send");
+            ps.setString(4, "bits");
+            ps.setDouble(5, 0.0);
+            ps.setDouble(6, senderBalance);
+            ps.setTimestamp(7, sqlDate);
 
             ps.executeUpdate();
         } catch (SQLException e) {

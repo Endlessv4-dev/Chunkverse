@@ -40,13 +40,14 @@ public class Database {
         }
 
         try (Statement statement = connection.createStatement()) {
-            statement.executeUpdate("CREATE TABLE IF NOT EXISTS log (" +
+            statement.executeUpdate("CREATE TABLE IF NOT EXISTS logs (" +
                     "id INT(11) AUTO_INCREMENT PRIMARY KEY, " +
                     "sender VARCHAR(36), " +
                     "target VARCHAR(36), " +
                     "type VARCHAR(16), " +
                     "currency VARCHAR(16), " +
-                    "amount DOUBLE," +
+                    "amount DOUBLE, " +
+                    "old_balance DOUBLE, " +
                     "date TIMESTAMP)");
             Bukkit.getLogger().info("[Economy] Adatbázis tábla (log) létrehozva/ellenőrízve.");
         } catch (SQLException e) {

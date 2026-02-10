@@ -11,6 +11,7 @@ import net.kyori.adventure.text.event.HoverEvent;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 import org.bukkit.Bukkit;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabExecutor;
@@ -19,10 +20,8 @@ import org.checkerframework.checker.units.qual.C;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Timestamp;
+import javax.xml.crypto.Data;
+import java.sql.*;
 import java.util.*;
 
 public class Bits implements TabExecutor {
@@ -188,60 +187,6 @@ public class Bits implements TabExecutor {
             return true;
 
         }
-        else if (cmd.equals("logs")) {
-
-            if (!sender.hasPermission("chunkverse.bits.logs")) {
-                sender.sendMessage("§c§lFAILED | §7You don't have permission to do this.");
-                return false;
-            }
-
-            Bukkit.getScheduler().runTaskAsynchronously(Main.getInstance(), () -> {
-                String sql = "SELECT * FROM log";
-                try (PreparedStatement ps = Database.getConnection().prepareStatement(sql)) {
-                    ResultSet rs = ps.executeQuery();
-
-                    while(rs.next()) {
-                        int id = rs.getInt("id");
-                        String admin = Objects.equals(rs.getString("executor"), "server") ? "server" : Bukkit.getPlayer(UUID.fromString(rs.getString("executor"))).getName();
-                        String target = Bukkit.getPlayer(UUID.fromString(rs.getString("target"))).getName();
-                        String type = rs.getString("type");
-                        String currency = rs.getString("currency");
-                        double amount = rs.getDouble("amount");
-                        Timestamp date = rs.getTimestamp("date");
-
-                        Logger.toFile(admin, target, type, currency, amount, date);
-                    }
-
-                    Component firstHalf = Component.text("§a§lSUCCESS | §7The log file ");
-
-                    Component file = Component.text("[Transactions]")
-                            .color(NamedTextColor.GREEN)
-                            .decoration(TextDecoration.BOLD, true)
-                            .clickEvent(ClickEvent.runCommand("/viewlog"))
-                            .hoverEvent(HoverEvent.showText(Component.text("Click to check the last 10 transactions", NamedTextColor.GRAY)));
-
-                    Component lastHalf = Component.text(" §7has been updated.");
-
-                    Component full = Component.text("[Full]")
-                            .color(NamedTextColor.BLUE)
-                            .decoration(TextDecoration.BOLD, true)
-                            .decoration(TextDecoration.ITALIC, true)
-                            .clickEvent(ClickEvent.runCommand("/openlogs"))
-                            .hoverEvent(HoverEvent.showText(Component.text("Click to see the full logs. ", NamedTextColor.GRAY)));
-
-                    Component finalMessage = firstHalf
-                            .append(file)
-                            .append(lastHalf)
-                            .append(full);
-
-                    sender.sendMessage(finalMessage);
-                } catch (SQLException e) {
-                    sender.sendMessage("§c§lERROR | §7Error while trying to reach the database.");
-                    e.printStackTrace();
-                }
-            });
-            return true;
-        }
 
         sender.sendMessage("§c§lFAILED | §7Usage: /bitsa <give|take|set|reset> <player> [amount]");
         return true;
@@ -264,9 +209,6 @@ public class Bits implements TabExecutor {
             }
             if (sender.hasPermission("chunkverse.bits.reset")) {
                 completions.add("reset");
-            }
-            if (sender.hasPermission("chunkverse.bits.logs")) {
-                completions.add("logs");
             }
         } else if (args.length == 2) {
             for (Player p : Bukkit.getOnlinePlayers()) {

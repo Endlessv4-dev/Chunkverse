@@ -2,10 +2,7 @@ package dev.endless.v4.economy;
 
 import dev.endless.v4.economy.commands.OrbAccept;
 import dev.endless.v4.economy.commands.OrbDeny;
-import dev.endless.v4.economy.commands.admin.Bits;
-import dev.endless.v4.economy.commands.admin.Openlogs;
-import dev.endless.v4.economy.commands.admin.Orbs;
-import dev.endless.v4.economy.commands.admin.Viewlog;
+import dev.endless.v4.economy.commands.admin.*;
 import dev.endless.v4.economy.managers.BitsManager;
 import dev.endless.v4.economy.managers.OrbsManager;
 import dev.endless.v4.economy.placeholders.BitsExpansion;
@@ -53,6 +50,8 @@ public final class Main extends JavaPlugin {
         Objects.requireNonNull(getCommand("orbdeny")).setExecutor(new OrbDeny());
         Objects.requireNonNull(getCommand("viewlog")).setExecutor(new Viewlog());
         Objects.requireNonNull(getCommand("openlogs")).setExecutor(new Openlogs());
+        Objects.requireNonNull(getCommand("rollback")).setExecutor(new Rollback());
+        Objects.requireNonNull(getCommand("logs")).setExecutor(new Logs());
     }
 
     private void registerPlaceholders() {
