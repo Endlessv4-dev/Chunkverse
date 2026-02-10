@@ -3,6 +3,7 @@ package dev.endless.v4.economy;
 import dev.endless.v4.economy.commands.OrbAccept;
 import dev.endless.v4.economy.commands.OrbDeny;
 import dev.endless.v4.economy.commands.admin.*;
+import dev.endless.v4.economy.listeners.AuthListener;
 import dev.endless.v4.economy.managers.BitsManager;
 import dev.endless.v4.economy.managers.OrbsManager;
 import dev.endless.v4.economy.placeholders.BitsExpansion;
@@ -37,6 +38,7 @@ public final class Main extends JavaPlugin {
         OrbsManager.loadOrbs();
         BitsManager.loadBits();
 
+        registerListeners();
         registerCommands();
         registerPlaceholders();
     }
@@ -52,6 +54,10 @@ public final class Main extends JavaPlugin {
         Objects.requireNonNull(getCommand("openlogs")).setExecutor(new Openlogs());
         Objects.requireNonNull(getCommand("rollback")).setExecutor(new Rollback());
         Objects.requireNonNull(getCommand("logs")).setExecutor(new Logs());
+    }
+
+    private void registerListeners() {
+        getServer().getPluginManager().registerEvents(new AuthListener(), this);
     }
 
     private void registerPlaceholders() {

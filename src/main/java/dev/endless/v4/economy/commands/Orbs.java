@@ -72,7 +72,7 @@ public class Orbs implements TabExecutor {
                     .clickEvent(ClickEvent.runCommand("/orbaccept " + target.getName() + " " + amount))
                     .hoverEvent(HoverEvent.showText(Component.text("Click to send the orbs", NamedTextColor.GRAY)));
 
-            Component spacer = Component.text("  ");
+            Component spacer = Component.text(" ");
 
             Component noBtn = Component.text("[Cancel]")
                     .color(NamedTextColor.RED)
@@ -80,7 +80,7 @@ public class Orbs implements TabExecutor {
                     .clickEvent(ClickEvent.runCommand("/orbdeny"))
                     .hoverEvent(HoverEvent.showText(Component.text("Click to cancel", NamedTextColor.GRAY)));
 
-            Component finalMessage = Component.text("§7§lAre you sure you want to send premium currency? ")
+            Component finalMessage = Component.text("§7Are you sure you want to send premium currency?\n")
                             .append(acceptBtn)
                             .append(spacer)
                             .append(noBtn);

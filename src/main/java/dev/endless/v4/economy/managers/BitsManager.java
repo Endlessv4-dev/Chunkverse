@@ -273,6 +273,10 @@ public class BitsManager {
         return true;
     }
 
+    public static void giveReward(Player player, double amount) {
+        give(player, amount);
+    }
+
     private static void updateDatabase(UUID uuid, double balance) {
         String sql = "INSERT INTO economy (uuid, bits) VALUES (?, ?) ON DUPLICATE KEY UPDATE bits = ?";
         try (PreparedStatement ps = Database.getConnection().prepareStatement(sql)) {
