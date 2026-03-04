@@ -4,11 +4,9 @@ import dev.endless.v4.economy.commands.OrbAccept;
 import dev.endless.v4.economy.commands.OrbDeny;
 import dev.endless.v4.economy.commands.admin.*;
 import dev.endless.v4.economy.listeners.AuthListener;
-import dev.endless.v4.economy.managers.BitsManager;
-import dev.endless.v4.economy.managers.OrbsManager;
+import dev.endless.v4.economy.listeners.ProxyListener;
 import dev.endless.v4.economy.placeholders.BitsExpansion;
 import dev.endless.v4.economy.placeholders.OrbsExpansion;
-import dev.endless.v4.economy.utils.Database;
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -24,19 +22,9 @@ public final class Main extends JavaPlugin {
 
         instance = this;
 
-        saveDefaultConfig();
-
-        String host = getConfig().getString("database.host");
-        int port = getConfig().getInt("database.port");
-        String dbName = getConfig().getString("database.name");
-        String user = getConfig().getString("database.user");
-        String password = getConfig().getString("database.password");
-
-        Database.connect(host, port, dbName, user, password);
-        Database.createTables();
-
-        OrbsManager.loadOrbs();
-        BitsManager.loadBits();
+//        saveDefaultConfig();
+        getServer().getMessenger().registerOutgoingPluginChannel(this, "chunkverse:economy");
+        getServer().getMessenger().registerIncomingPluginChannel(this, "chunkverse:economy", new ProxyListener());
 
         registerListeners();
         registerCommands();
@@ -50,10 +38,8 @@ public final class Main extends JavaPlugin {
         Objects.requireNonNull(getCommand("bits")).setExecutor(new dev.endless.v4.economy.commands.Bits());
         Objects.requireNonNull(getCommand("orbaccept")).setExecutor(new OrbAccept());
         Objects.requireNonNull(getCommand("orbdeny")).setExecutor(new OrbDeny());
-        Objects.requireNonNull(getCommand("viewlog")).setExecutor(new Viewlog());
         Objects.requireNonNull(getCommand("openlogs")).setExecutor(new Openlogs());
-        Objects.requireNonNull(getCommand("rollback")).setExecutor(new Rollback());
-        Objects.requireNonNull(getCommand("logs")).setExecutor(new Logs());
+//        Objects.requireNonNull(getCommand("rollback")).setExecutor(new Rollback());
     }
 
     private void registerListeners() {
@@ -73,7 +59,6 @@ public final class Main extends JavaPlugin {
 
     @Override
     public void onDisable() {
-        Database.disconnect();
     }
 
     public static Main getInstance() {

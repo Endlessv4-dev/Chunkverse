@@ -15,18 +15,29 @@ public class OrbAccept implements CommandExecutor {
 
         if (!(sender instanceof Player player)) {
             sender.sendMessage("§c§lFAILED | §7Only players can use this command.");
-            return false;
+            return true;
         }
 
-        if (!Orbs.awaiting.contains(player.getUniqueId())) {
-            player.sendMessage("§c§lFAILED | §7There is nothing to accept.");
-            return false;
+        if (!Orbs.awaiting.containsKey(player.getUniqueId())) {
+            player.sendMessage("§c§lFAILED | §7You don't have any pending transactions.");
+            return true;
+        }
+
+        if (args.length != 2) {
+            player.sendMessage("§c§lFAILED | §7Usage: /orbaccept <player>");
+            return true;
         }
 
         Player target = Bukkit.getPlayerExact(args[0]);
         if (target == null) {
             player.sendMessage("§c§lFAILED | §7This player doesn't exist or is not online.");
-            return false;
+            Orbs.awaiting.remove(player.getUniqueId());
+            return true;
+        }
+
+        if (!target.getUniqueId().equals(Orbs.awaiting.get(player.getUniqueId()))) {
+            player.sendMessage("§c§lFAILED | §7This transaction is not valid for this target.");
+            return true;
         }
 
         double amount;
@@ -43,9 +54,10 @@ public class OrbAccept implements CommandExecutor {
             Orbs.awaiting.remove(player.getUniqueId());
         }
         else {
-            player.sendMessage("§c§lFAILED | §7You cannot send more orbs than the amount you have.");
+            player.sendMessage("§c§lFAILED | §7You don't have enough orbs.");
+            Orbs.awaiting.remove(player.getUniqueId());
         }
 
-        return false;
+        return true;
     }
 }

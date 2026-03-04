@@ -20,31 +20,36 @@ public class Bits implements TabExecutor {
 
         if (args.length == 0) {
             if (!(sender instanceof Player player)){
-                sender.sendMessage("§c§lFAILED | §7You don't have your own bits since you are not a player.");
-                return false;
+                sender.sendMessage("§c§lFAILED | §7Console doesn't have bits. Use /bitsa to manage players.");
+                return true;
             }
-            double balance = BitsManager.bits.getOrDefault(player.getUniqueId(), 0.0);
-            sender.sendMessage("§7Bits: §6" + balance);
-            return false;
+            BitsManager.requestBalanceSync(player);
+            showBalance(player, player);
+            return true;
         }
 
-        String cmd = args[0];
-        if (cmd.equals("send")) {
+        String sub = args[0].toLowerCase();
 
+        if (sub.equals("send")) {
             if (!(sender instanceof Player player)){
                 sender.sendMessage("§c§lFAILED | §7Only players can send bits.");
-                return false;
+                return true;
             }
 
             if (args.length != 3) {
-                player.sendMessage("§c§lFAILED | §7Usage: /bits send <player> [amount]");
-                return false;
+                player.sendMessage("§c§lFAILED | §7Usage: /bits send <player> <amount>í");
+                return true;
             }
 
             Player target = Bukkit.getPlayerExact(args[1]);
             if (target == null) {
                 player.sendMessage("§c§lFAILED | §7This player doesn't exist or is not online.");
-                return false;
+                return true;
+            }
+
+            if (target == player) {
+                player.sendMessage("§c§lFAILED | §7You cannot send bits to yourself.");
+                return true;
             }
 
             double amount;
@@ -62,25 +67,28 @@ public class Bits implements TabExecutor {
             else {
                 player.sendMessage("§c§lFAILED | §7You cannot send more bits than the amount you have.");
             }
+            return true;
+        }
 
+        Player target = Bukkit.getPlayerExact(args[0]);
+        if (target != null) {
+            BitsManager.requestBalanceSync(target);
+            showBalance(sender, target);
         }
         else {
-            Player target = Bukkit.getPlayerExact(cmd);
-            if (target == null) {
-                sender.sendMessage("§c§lFAILED | §7This player doesn't exist or is not online.");
-                return false;
-            }
-            double balance = BitsManager.bits.getOrDefault(target.getUniqueId(), 0.0);
-
-            if (target == sender) {
-                sender.sendMessage("§7Bits: §6" + balance);
-            }
-            else {
-                sender.sendMessage("§e" + target.getName() + "§7's bits: §6" + balance);
-            }
+            sender.sendMessage("§c§lFAILED | §7Player offline or unknown subcommand.");
         }
+        return true;
+    }
 
-        return false;
+    private void showBalance(CommandSender viewer, Player target) {
+        double balance = BitsManager.bits.getOrDefault(target.getUniqueId(),  0.0);
+        if (viewer == target) {
+            viewer.sendMessage("§7Your Bits: §6" + balance);
+        }
+        else {
+            viewer.sendMessage("§e" + target.getName() + "§7's Bits: §6" + balance);
+        }
     }
 
     @Override
@@ -93,17 +101,12 @@ public class Bits implements TabExecutor {
             for (Player p : Bukkit.getOnlinePlayers()) {
                 completions.add(p.getName());
             }
-        } else if (args.length == 2) {
-            if (args[0].equals("send")) {
-                for (Player p : Bukkit.getOnlinePlayers()) {
-                    completions.add(p.getName());
-                }
+        } else if (args.length == 2 && args[0].equalsIgnoreCase("send")) {
+            for (Player p : Bukkit.getOnlinePlayers()) {
+                completions.add(p.getName());
             }
-        } else if (args.length == 3) {
-            String action = args[0].toLowerCase();
-            if (action.equals("send")) {
-                completions.addAll(Arrays.asList("1", "10", "100", "1000"));
-            }
+        } else if (args.length == 3 && args[0].equalsIgnoreCase("send")) {
+            completions.addAll(Arrays.asList("1", "10", "100", "1000"));
         }
 
         if (args.length == 0) {

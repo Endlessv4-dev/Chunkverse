@@ -12,17 +12,16 @@ public class OrbDeny implements CommandExecutor {
 
         if (!(sender instanceof Player player)) {
             sender.sendMessage("§c§lFAILED | §7Only players can use this command.");
-            return false;
+            return true;
         }
 
-        if (!Orbs.awaiting.contains(player.getUniqueId())) {
-            player.sendMessage("§c§lFAILED | §7There is nothing to deny.");
-            return false;
+        if (!Orbs.awaiting.containsKey(player.getUniqueId()))  {
+            player.sendMessage("§c§lFAILED | §7You don't have any pending transactions.");
+            return true;
         }
 
         Orbs.awaiting.remove(player.getUniqueId());
-        player.sendMessage("§7You have cancelled the sending of orbs.");
-
-        return false;
+        player.sendMessage("§c§lCANCELLED | §7Transaction has been cancelled.");
+        return true;
     }
 }

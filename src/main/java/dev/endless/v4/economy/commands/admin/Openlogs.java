@@ -1,5 +1,7 @@
 package dev.endless.v4.economy.commands.admin;
 
+import com.google.common.io.ByteArrayDataOutput;
+import com.google.common.io.ByteStreams;
 import dev.endless.v4.economy.Main;
 import net.kyori.adventure.text.Component;
 import org.bukkit.Material;
@@ -22,31 +24,21 @@ public class Openlogs implements CommandExecutor {
 
         if (!(sender instanceof Player player)) {
             sender.sendMessage("§c§lFAILED | §7Only players can use this command.");
-            return false;
+            return true;
         }
 
-        File logFile = new File(Main.getInstance().getDataFolder(), "transactions.log");
-        if (logFile.exists()) {
-            try {
-                List<String> lines = Files.readAllLines(logFile.toPath());
-
-                ItemStack book = new ItemStack(Material.WRITTEN_BOOK);
-                BookMeta meta = (BookMeta) book.getItemMeta();
-
-                for (String line : lines) {
-                    meta.addPages(Component.text(line));
-                }
-
-                meta.setTitle("Transaction Log");
-                meta.setAuthor("System");
-                book.setItemMeta(meta);
-
-                player.openBook(book);
-            } catch (IOException e) {
-                sender.sendMessage("§c§lFAILED | §7Error while trying to read the file.");
-            }
+        if (!player.hasPermission("chunkverse.economy.logs")) {
+            player.sendMessage("§c§lFAILED | §7You don't have permission to do this.");
+            return true;
         }
 
-        return false;
+        player.sendMessage("§e§lLOADING | §7Fetching transactin logs from database...");
+
+        ByteArrayDataOutput out = ByteStreams.newDataOutput();
+        out.writeUTF("REQUEST_LOGS");
+        out.writeUTF(player.getUniqueId().toString());
+
+        player.sendPluginMessage(Main.getInstance(), "chunkverse:economy", out.toByteArray());
+        return true;
     }
 }

@@ -15,45 +15,47 @@ import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 public class Orbs implements TabExecutor {
 
-    public static List<UUID> awaiting = new ArrayList<>();
+    public static Map<UUID, UUID> awaiting = new HashMap<>();
 
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String string, @NotNull String @NotNull [] args) {
 
         if (args.length == 0) {
             if (!(sender instanceof Player player)){
-                sender.sendMessage("§c§lFAILED | §7You don't have your own orbs since you are not a player.");
-                return false;
+                sender.sendMessage("§c§lFAILED | §7Console doesn't have orbs. Use /orbsa to manage players.");
+                return true;
             }
-            double balance = OrbsManager.orbs.getOrDefault(player.getUniqueId(), 0.0);
-            sender.sendMessage("§7Orbs: §6" + balance);
-            return false;
+            OrbsManager.requestBalanceSync(player);
+            showBalance(player, player);
+            return true;
         }
 
-        String cmd = args[0];
-        if (cmd.equals("send")) {
+        String sub = args[0].toLowerCase();
+        if (sub.equals("send")) {
 
             if (!(sender instanceof Player player)){
                 sender.sendMessage("§c§lFAILED | §7Only players can send orbs.");
-                return false;
+                return true;
             }
 
             if (args.length != 3) {
-                player.sendMessage("§c§lFAILED | §7Usage: /orbs send <player> [amount]");
-                return false;
+                player.sendMessage("§c§lFAILED | §7Usage: /orbs send <player> <amount>");
+                return true;
             }
 
             Player target = Bukkit.getPlayerExact(args[1]);
             if (target == null) {
                 player.sendMessage("§c§lFAILED | §7This player doesn't exist or is not online.");
-                return false;
+                return true;
+            }
+
+            if (target == player) {
+                player.sendMessage("§c§lFAILED | §7You cannot send orbs to yourself.");
+                return true;
             }
 
             double amount;
@@ -64,7 +66,7 @@ public class Orbs implements TabExecutor {
                 return true;
             }
 
-            awaiting.add(player.getUniqueId());
+            awaiting.put(player.getUniqueId(), target.getUniqueId());
 
             Component acceptBtn = Component.text("[Yes]")
                     .color(NamedTextColor.GREEN)
@@ -86,24 +88,27 @@ public class Orbs implements TabExecutor {
                             .append(noBtn);
 
             player.sendMessage(finalMessage);
+            return true;
+        }
+        Player target = Bukkit.getPlayerExact(args[0]);
+        if (target != null) {
+            OrbsManager.requestBalanceSync(target);
+            showBalance(sender, target);
         }
         else {
-            Player target = Bukkit.getPlayerExact(cmd);
-            if (target == null) {
-                sender.sendMessage("§c§lFAILED | §7This player doesn't exist or is not online.");
-                return false;
-            }
-            double balance = OrbsManager.orbs.getOrDefault(target.getUniqueId(), 0.0);
-
-            if (target == sender) {
-                sender.sendMessage("§7Orbs: §6" + balance);
-            }
-            else {
-                sender.sendMessage("§e" + target.getName() + "§7's orbs: §6" + balance);
-            }
+            sender.sendMessage("§c§lFAILED | §7Player offline or unknown subcommand.");
         }
+        return true;
+    }
 
-        return false;
+    private void showBalance(CommandSender viewer, Player target) {
+        double balance = OrbsManager.orbs.getOrDefault(target.getUniqueId(), 0.0);
+        if (viewer == target) {
+            viewer.sendMessage("§7Your Orbs: §9" + balance);
+        }
+        else {
+            viewer.sendMessage("§e" + target.getName() + "§7's Orbs: §9" + balance);
+        }
     }
 
     @Override

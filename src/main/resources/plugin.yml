@@ -18,11 +18,25 @@ commands:
     description: Accepting the sending of premium currency.
   orbdeny:
     description: Cancelling the sending of premium currency.
-  viewlog:
-    description: view the logs.
   openlogs:
     description: Open the logs.
-  logs:
-    description: Execute specified command on the logs.
-  rollback:
-    description: Rolls back the specified transaction.
+
+permissions:
+  chunkverse.economy.logs:
+    description: Allows the player to open the logs in the form of a book.
+  chunkverse.bits.give:
+    description: Allows the player to give bits.
+  chunkverse.bits.take:
+    description: Allows the player to take bits.
+  chunkverse.bits.set:
+    description: Allows the player to set bits.
+  chunkverse.bits.reset:
+    description: Allows the player to reset bits.
+  chunkverse.orbs.give:
+    description: Allows the player to give orbs.
+  chunkverse.orbs.take:
+    description: Allows the player to take orbs.
+  chunkverse.orbs.set:
+    description: Allows the player to set orbs.
+  chunkverse.orbs.reset:
+    description: Allows the player to reset orbs.
